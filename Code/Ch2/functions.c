@@ -1,0 +1,27 @@
+#include<stdio.h>
+/*
+    typeof(unsigned char) == 1
+    用unsigned char(0x00-0xFF)而不是char是因为char可能是有符号(-128-127)的或无符号的
+*/
+typedef unsigned char *byte_pointer; 
+
+void show_bytes(byte_pointer start, size_t len){
+    size_t i;
+    for (i = 0; i < len; i++) {
+        printf(" %.2x", start[i]);
+    }
+    printf("\n");
+}
+
+void show_int(int x) {
+    show_bytes((byte_pointer)&x, sizeof(int));   //这里的强制类型转换不会改变真实的指针
+                                                //只是告诉编译器以新的数据类型来看待被指向的数据
+}
+
+void show_float(float x) {
+    show_bytes((byte_pointer)&x, sizeof(float));
+}
+
+void show_pointer(void *x) {
+    show_bytes((byte_pointer)&x, sizeof(void *));
+}
