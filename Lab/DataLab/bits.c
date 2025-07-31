@@ -165,9 +165,11 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  int i = x + 1;
-  int sum = i + x;
-  return !(~sum) & !!i;
+  //通过!运算将~sum转换为只有一个有效数字的 0x00000001 方便后面的&操作
+  // !!min 是为了避免x=-1也就是0xFFFFFFF时min == 0的情况
+  int min = x + 1;
+  int sum = min + x;
+  return !(~sum) & !!min;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
