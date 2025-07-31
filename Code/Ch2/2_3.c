@@ -21,6 +21,11 @@ int tsub_ok(int x,int y){
     return 1; // No overflow or underflow
 }
 
+int div16(int x){
+    int bits = x >> 31 & 0xF;
+    return (x + bits) >> 4;
+}
+
 int main(){
 
 }
