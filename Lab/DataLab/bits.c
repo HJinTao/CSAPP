@@ -143,8 +143,8 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  //主析取范式 + ～～
-  return ~(~(~x & y) & ~(~y & x));
+	//主析取范式 + ～～
+	return ~(~(~x & y) & ~(~y & x));
 } 
 /* 
  * tmin - return minimum two's complement integer 
@@ -153,8 +153,8 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-  //正溢出
-  return 1 << 31;
+	//正溢出
+	return 1 << 31;
 }
 //2
 /*
@@ -165,11 +165,11 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  //通过!运算将~sum转换为只有一个有效数字的 0x00000001 方便后面的&操作
-  // !!min 是为了避免x=-1也就是0xFFFFFFF时min == 0的情况
-  int min = x + 1;
-  int sum = min + x;
-  return !(~sum) & !!min;
+	//通过!运算将~sum转换为只有一个有效数字的 0x00000001 方便后面的&操作
+	// !!min 是为了避免x=-1也就是0xFFFFFFF时min == 0的情况
+	int min = x + 1;
+	int sum = min + x;
+	return !(~sum) & !!min;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -180,7 +180,10 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+	// 构造补码0xAAAAAAAA同时利用a~a == 0的性质  同时注意运算符优先级
+	int mask = (0xAA << 8) + (0xAA << 16) + (0xAA << 24) + 0xAA;
+	int check = mask & x;
+	return !(check ^ mask);
 }
 /* 
  * negate - return -x 
@@ -190,7 +193,8 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+	// 负数的补码是正数的反码加1
+  	return ~x + 1;
 }
 //3
 /* 
@@ -203,7 +207,12 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+	// 将x分为两部分判断,如x == 0x000000c1时,判断0x0000 00c 和 0x0000 0001
+	int check1 = !((x >> 4) ^ 0x3);    // check1 == 1 -> 右移4位后是0x3000 0000
+	int check2 = (x >> 3) & 0x1; 	   // check2 == 1 -> x的第3位(从0位开始)是1
+	int check3 = ((x >> 1) | 0x0) | ((x >> 2) | 0x0);   // check3 == 1 -> x的第1位和第二位里面至少有一个是1
+	int check4 = !(check2 & check3);  				// check4 == 1  -> HEX下的x的第0位数字 < a
+	return check1 & check4;
 }
 /* 
  * conditional - same as x ? y : z 
