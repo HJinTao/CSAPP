@@ -257,11 +257,12 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-	int negativeOne = ~1 + 1;
-	int TMax = (1 >> 31) + negativeOne;
-	int diff1 = (x + negativeOne) >> 31;
-	int diff2 = (TMax + (~x + 1)) >> 31;   //判断x是否在TMin~TMax的范围内
-	return ~(diff1 & diff2) + 1;            // 由于算术右移,x != 0时diff1&diff2 为-1,需要取相反数
+	// int negativeOne = ~1 + 1;
+	// int TMax = (1 >> 31) + negativeOne;
+	// int diff1 = (x + negativeOne) >> 31;
+	// int diff2 = (TMax + (~x + 1)) >> 31;   //判断x是否在TMin~TMax的范围内
+	// return ~(diff1 & diff2) + 1;            // 由于算术右移,x != 0时 diff1 & diff2 为-1,需要取相反数
+	return ((x | (~x + 1)) >> 31) + 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -276,7 +277,21 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-	
+	int b0,b1,b2,b4,b8,b16,sign;
+	sign = x >> 31;
+	x = x ^ sign;
+	b16 = !!(x >> 16) << 4;
+	x = x >> b16;
+	b8 = !!(x >> 8) << 3;
+	x = x >> b8;
+	b4 = !!(x >> 4) << 2;
+	x = x >> b4;
+	b2 = !!(x >> 2) << 1;
+	x = x >> b2;
+	b1 = !!(x >> 1);
+	x = x >> b1;
+	b0 = x;
+	return b0 + b1 + b2 + b4 + b8 + b16 + 1;
 }
 //float
 /* 
