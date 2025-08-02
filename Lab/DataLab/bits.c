@@ -207,12 +207,16 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-	// 将x分为两部分判断,如x == 0x000000c1时,判断0x0000 00c 和 0x0000 0001
-	int check1 = !((x >> 4) ^ 0x3);    // check1 == 1 -> 右移4位后是0x3000 0000
-	int check2 = (x >> 3) & 0x1; 	   // check2 == 1 -> x的第3位(从0位开始)是1
-	int check3 = ((x >> 1) | 0x0) | ((x >> 2) | 0x0);   // check3 == 1 -> x的第1位和第二位里面至少有一个是1
-	int check4 = !(check2 & check3);  				// check4 == 1  -> HEX下的x的第0位数字 < a
-	return check1 & check4;
+    // // 将x分为两部分判断,如x == 0x000000c1时,判断0x0000 00c 和 0x0000 0001
+    // int check1 = !((x >> 4) ^ 0x3);    // check1 == 1 -> 右移4位后是0x3000 0000
+    // int check2 = (x >> 3) & 0x1; 	   // check2 == 1 -> x的第3位(从0位开始)是1
+    // int check3 = ((x >> 1) | 0x0) | ((x >> 2) | 0x0);   // check3 == 1 -> x的第1位和第二位里面至少有一个是1
+    // int check4 = !(check2 & check3);  				// check4 == 1  -> HEX下的x的第0位数字 < a
+    // return check1 & check4;
+	/*更优解 作差后判断是否是负数,也就是最高位是否是0*/
+	int lower_bound = x + (~0x30 + 1);  // x - 0x30
+  	int upper_bound = 0x39 + (~x + 1); // 0x39 - x
+  	return !(lower_bound >> 31) & !(upper_bound >> 31);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -222,7 +226,15 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+    int check = !x;
+	y = (y << 1) + (~(y << check) + 1);   
+	z = (z << 1) + (~(z << !check) + 1);  //将等式 z = z * check 改写 成模运算
+	return y ^ z;       //受仅用^实现无temp的swap方法实现启发，利用x ^ 0 = x性质
+	// 更优解 构造mask
+	/*
+	int mask = ~(!x) + 1;
+	return (z & mask) | (y & ~mask);
+	*/
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -232,7 +244,8 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+	int diff = y + (~x + 1);
+	return !(diff >> 31);
 }
 //4
 /* 
@@ -244,7 +257,11 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+	int negativeOne = ~1 + 1;
+	int TMax = (1 >> 31) + negativeOne;
+	int diff1 = (x + negativeOne) >> 31;
+	int diff2 = (TMax + (~x + 1)) >> 31;   //判断x是否在TMin~TMax的范围内
+	return ~(diff1 & diff2) + 1;            // 由于算术右移,x != 0时diff1&diff2 为-1,需要取相反数
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -259,7 +276,7 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+	
 }
 //float
 /* 
