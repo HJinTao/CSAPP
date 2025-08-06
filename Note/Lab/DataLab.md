@@ -4,7 +4,7 @@
 
 ## 1.Lab说明
 
-
+**NONE**
 
 ## 2.bits.c
 
@@ -12,20 +12,11 @@
 
 - #### Description
 
-	* **int bitXor(int x,int y)**
-
 	* bitXor - x^y using only ~ and &
-
-	* Example: bitXor(4, 5) = 1
-
 	* **Legal ops: ~ &**
-
-	* **Max ops: 14**
-
-	* Rating: 1
-
+	
 	**只用合法运算符实现异或运算**
-
+	
 - #### Analysis
 
 	由离散数学主析取范式与命题运算可知
@@ -44,18 +35,11 @@
 
 - #### Description
 
-	* **int tmin(void)**
-
 	* tmin - return minimum two's complement integer 
-
 	* **Legal ops: ! ~ & ^ | + << >>**
-
-	* **Max ops: 4**
-
-	* Rating: 1
-
+	
 	 **只用合法运算符返回TMin_32**
-
+	
 - #### Analysis
 
 	由补码知识可知，`(TMin_32)INT_32`编码范围为
@@ -81,14 +65,11 @@
 
 - #### Description
 
-	 - **int isTmax(int x)**
-	 - isTmax - returns 1 if x is the maximum, two's complement number, and 0 otherwise 
+	  - isTmax - returns 1 if x is the maximum, two's complement number, and 0 otherwise 
 	 - **Legal ops: ! ~ & ^ | +**
-	 - **Max ops: 10**
-	 - Rating: 1
-
+	
 	**判断x是否是TMax_32，是的话返回1，不是的话返回0**
-
+	
 - #### Analysis
 
 	我们知道**TMin_32** 和 **TMax_32**的补码表示如下
@@ -128,15 +109,12 @@ $$
 
 - #### Description
 
-	 - **int allOddBits(int *x*)**
-	 - allOddBits - return 1 if all odd-numbered bits in word set to 1 where bits are numbered from 0 (least significant) to 31 (most significant)
+	  - allOddBits - return 1 if all odd-numbered bits in word set to 1 where bits are numbered from 0 (least significant) to 31 (most significant)
 	 - Examples allOddBits(0xFFFFFFFD) = 0, allOddBits(0xAAAAAAAA) = 1
 	 - **Legal ops: ! ~ & ^ | + << >>**
-	 - Max ops: 12
-	 - Rating: 2
-
+	
 	**判断x的奇数位上是否都是1，如果是则返回1，不是的话返回0**
-
+	
 - #### Analysis
 
 	我们首先引入 **掩码** **(mask)** 的概念
@@ -173,12 +151,8 @@ $$
 
 - #### Description
 
-	 - **int negate(int *x*)**
-	 - **negate - return -x** 
-	 - Example: negate(1) = -1.
+	  - **negate - return -x** 
 	 - **Legal ops: ! ~ & ^ | + << >>**
-	 - Max ops: 5
-	 - Rating: 2
 
 ​		**返回 -x**
 
@@ -197,31 +171,184 @@ $$
 
 - #### Description
 
-	 - int isAsciiDigit(int *x*)
-	 - **isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')**
-	 - Example: isAsciiDigit(0x35) = 1.
-	 - isAsciiDigit(0x3a) = 0.
-	 - isAsciiDigit(0x05) = 0.
+	  - **isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')**
 	 - **Legal ops: ! ~ & ^ | + << >>**
-	 - Max ops: 15
-	 - Rating: 3
-
-	**返回 0x30 <= x <= 0x39** 
-
+	
+	**返回表达式 `0x30 <= x <= 0x39` 的值** 
+	
 - #### Analysis
 
-	依旧利用 **mask** ，详解见注释
+  本题的本质是判断**x是否在某个区间里面**，我们可以采用作差后判断结果是否是负数的方法来确定。
+
+  **注：可以通过差的补码最高位符号来判断正负**
 
 - #### Solution
 
 	```c
 	int isAsciiDigit(int x) {
-		// 将x分为两部分判断,如x == 0x000000c1时,判断0x0000 00c 和 0x0000 0001
-		int check1 = !((x >> 4) ^ 0x3);    // check1 == 1 -> 右移4位后是0x3000 0000
-		int check2 = (x >> 3) & 0x1; 	   // check2 == 1 -> x的第3位(从0位开始)是1
-		int check3 = ((x >> 1) | 0x0) | ((x >> 2) | 0x0);   // check3 == 1 -> x的第1位和第二位里面至少有一个是1
-		int check4 = !(check2 & check3);  				// check4 == 1  -> HEX下的x的第0位数字 < a
-		return check1 & check4;
+		int lower_bound = x + (~0x30 + 1);  // x - 0x30
+	  	int upper_bound = 0x39 + (~x + 1); // 0x39 - x
+	  	return !(lower_bound >> 31) & !(upper_bound >> 31);
+	}
+	```
+	
+
+
+
+### 7.conditional
+
+- #### Description
+
+	 * **conditional - same as x ? y : z** 
+	 * Example: conditional(2,4,5) = 4
+	 * Legal ops: ! ~ & ^ | + << >>
+
+	**返回表达式 `x ? y : z ` 的值**
+
+- #### Analysis
+
+	我们可以通过构造**掩码`mask`** 的方式来**决定取y还是取z**
+
+	我们注意到**mask = 0xFFFFFFF(-1)时代表取这个数的所有位，mask = 0x00000000(0)时代表一个位也不取**
+
+	于是我们有如下**Solution**
+
+- #### Solution
+
+	```c
+	int conditional(int x, int y, int z) {
+		int mask = ~(!x) + 1;
+		return (z & mask) | (y & ~mask);
+	}
+	```
+
+
+
+### 8.isLessOrEqual
+
+参考**6.isAsciiDigit**，不再赘述
+
+```c
+int isLessOrEqual(int x, int y) {
+   /*作差后判断是否是负数,也就是最高位是否是0*/
+	int diff = y + (~x + 1);
+	return !(diff >> 31);
+}
+```
+
+
+
+### 9.logicalNeg
+
+- #### Description
+
+	* **logicalNeg - implement the ! operator, using all of the legal operators except** 
+
+	* Examples: logicalNeg(3) = 0, logicalNeg(0) = 1
+
+	* Legal ops: ~ & ^ | + << >>
+
+	**实现 ! 运算**
+
+- #### Solution
+
+	```c
+	int logicalNeg(int x) {
+	   /*根据 0和0的相反数 的补码最高位都是0这个特点*/
+		return ((x | (~x + 1)) >> 31) + 1;
+	}
+	```
+
+
+
+### 10.howManyBits
+
+- #### Description
+
+	* **howManyBits - return the minimum number of bits required to represent x in *two's complement***
+
+	 *  Examples: howManyBits(12) = 5
+
+	 *            howManyBits(298) = 10
+
+	 *            howManyBits(-5) = 4
+
+	 *            **howManyBits(0)  = 1**
+
+	 *            **howManyBits(-1) = 1**
+
+	 *            howManyBits(0x80000000) = 32
+	 *            Legal ops: ! ~ & ^ | + << >>
+	 *            Max ops: **90**
+
+	**返回一个数的补码需要至少几位数字，注意-1(其实是所有负数)这个特殊情况，只需要补码 `1` 就可以表示**
+
+- #### Analysis
+
+	个人认为这是DataLab中难度系数最高的函数，由最大允许的操作符个数 **90** 可见一般
+	
+	解析见下
+	
+- #### Solution
+
+  ```c
+  int howManyBits(int x) {
+     /*利用x^0xffffffff == ~x的性质对负数取反 之后利用二分法的思路寻找最高位1的位数*/
+     int sign,b16,b8,b4,b2,b1,b0;
+     sign = x >> 31;
+     x ^= sign;
+     b16 = !!(x >> 16) << 4;
+     x >>= b16;
+     b8 = !!(x >> 8) << 3;
+     x >>= b8;
+     b4 = !!(x >> 4) << 2;
+     x >>= b4;
+     b2 = !!(x >> 2) << 1;
+     x >>= b2;
+     b1 = !!(x >> 1) << 1;
+     x >>= b1;
+     b0 = x;
+     return 1 + b0 + b1 + b2 + b4 + b8 + b16; 
+  }
+  ```
+
+
+
+### 11.floatScale2
+
+- #### Description
+
+	- Return bit-level equivalent of expression 2 * f for floating point argument f.
+	- When argument is NaN, return argument
+
+	**返回2*f的结果**
+
+- #### Analysis
+
+	**float32** 的位表示是1个符号位，8个指数位，23个小数位。基于此，我们只需把各个部分的位表示提取出来再进行判断即可。
+
+- #### Solution
+
+	```c
+	unsigned floatScale2(unsigned uf) {
+	   unsigned exp,frac,sign,res;
+	   exp = (uf >> 23) & 0xff;
+	   frac = uf & 0x7FFFFF;
+	   sign = uf >> 31;
+	   if(!exp){
+	      return (uf << 1) | (sign << 31);    //这里可以看出denorm的E = 1-Bias而不是E = -Bias的好处
+	   }
+	   else if(exp == 0xff){ 
+	      return uf;
+	   }
+	   else{
+	      exp += 1;
+	      if(exp == 0xff){
+	         return 0x7F800000 | (sign << 31);
+	      }
+	   }
+	   res = (sign << 31) | (exp << 23) | frac;
+	   return res;
 	}
 	```
 
@@ -229,5 +356,76 @@ $$
 
 
 
+### 12. floatFloat2Int
 
+- #### Description
+
+	* Return bit-level equivalent of **expression (int) f** for floating point argument **f**.
+	* Argument is passed as unsigned int, but it is to be interpreted as the bit-level representation of a single-precision floating point value.
+	* Anything out of range (including NaN and infinity) should return 0x80000000u.
+	* Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
+
+	**实现 `(int) f` ，值得注意的是这里允许if else while的使用**
+
+- #### Analysis
+
+	**float32** 的位表示是1个符号位，8个指数位，23个小数位。基于此，我们只需把各个部分的位表示提取出来再进行判断即可。
+
+- #### Solution
+
+	```c
+	int floatFloat2Int(unsigned uf) {
+	   unsigned exp,Bias;
+	   int E,frac,sign;
+	   Bias = 127;
+	   sign = uf & 0x80000000;
+	   exp = (uf >> 23) & 0xff;
+	   frac = uf & 0x7fffff;
+	   E = exp - Bias;   
+	
+	   if(E >= 32){
+	      return 0x80000000u;
+	   }
+	   else if(E < 0){   //包含了 denorm 的情况
+	      return 0;
+	   }
+	   else{
+	      return (frac | 0x800000 | (sign >> 7)) >> 23 << E;
+	   }
+	}
+	```
+
+	
+
+### 13.floatPower2
+
+- #### Description
+
+	- floatPower2 - Return bit-level equivalent of the expression 2.0^x，(2.0 raised to the power x) for any 32-bit integer x.
+	- If the result is too small to be represented as a denorm, return 0. If too large, return +INF.
+
+	**返回2的整数次幂的float32位表示，如果是denorm，返回0，如果太大，返回+INF**
+
+- #### Analysis
+
+	无额外注意事项，同上述两题即可
+
+- #### Solution
+
+	```c
+	unsigned floatPower2(int x) {
+	   int exp = x + 127;
+	   if(exp <= 0){
+	      return 0;
+	   }
+	   else if(exp >= 0xff){
+	      return 0xff << 23;
+	   }
+	   else{
+	      return exp << 23;
+	   }
+	}
+	```
+
+	
 

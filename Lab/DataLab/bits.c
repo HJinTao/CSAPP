@@ -226,7 +226,7 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-    int check = !x;
+   int check = !x;
 	y = (y << 1) + (~(y << check) + 1);   
 	z = (z << 1) + (~(z << !check) + 1);  //将等式 z = z * check 改写 成模运算
 	return y ^ z;       //受仅用^实现无temp的swap方法实现启发，利用x ^ 0 = x性质
@@ -244,6 +244,7 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
+   /*作差后判断是否是负数,也就是最高位是否是0*/
 	int diff = y + (~x + 1);
 	return !(diff >> 31);
 }
@@ -257,6 +258,7 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
+   /*根据0的相反数和0的补码最高位都是0这个特点*/
 	// int negativeOne = ~1 + 1;
 	// int TMax = (1 >> 31) + negativeOne;
 	// int diff1 = (x + negativeOne) >> 31;
@@ -277,21 +279,22 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-	int b0,b1,b2,b4,b8,b16,sign;
-	sign = x >> 31;
-	x = x ^ sign;
-	b16 = !!(x >> 16) << 4;
-	x = x >> b16;
-	b8 = !!(x >> 8) << 3;
-	x = x >> b8;
-	b4 = !!(x >> 4) << 2;
-	x = x >> b4;
-	b2 = !!(x >> 2) << 1;
-	x = x >> b2;
-	b1 = !!(x >> 1);
-	x = x >> b1;
-	b0 = x;
-	return b0 + b1 + b2 + b4 + b8 + b16 + 1;
+   /*利用x^0xffffffff == ~x的性质对负数取反 之后利用二分法的思路寻找最高位1的位数*/
+   int sign,b16,b8,b4,b2,b1,b0;
+   sign = x >> 31;
+   x ^= sign;
+   b16 = !!(x >> 16) << 4;
+   x >>= b16;
+   b8 = !!(x >> 8) << 3;
+   x >>= b8;
+   b4 = !!(x >> 4) << 2;
+   x >>= b4;
+   b2 = !!(x >> 2) << 1;
+   x >>= b2;
+   b1 = !!(x >> 1) << 1;
+   x >>= b1;
+   b0 = x;
+   return 1 + b0 + b1 + b2 + b4 + b8 + b16; 
 }
 //float
 /* 
@@ -349,7 +352,7 @@ int floatFloat2Int(unsigned uf) {
    if(E >= 32){
       return 0x80000000u;
    }
-   else if(E < 0){
+   else if(E < 0){         //包含了 denorm 的情况
       return 0;
    }
    else{
@@ -370,5 +373,14 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-
+   int exp = x + 127;
+   if(exp <= 0){
+      return 0;
+   }
+   else if(exp >= 0xff){
+      return 0xff << 23;
+   }
+   else{
+      return exp << 23;
+   }
 }
