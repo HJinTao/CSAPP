@@ -91,7 +91,7 @@ void end(){
     free(memory);
 }
 
-void printStatus(STATUS status){
+void print_status(STATUS status){
     printf("%c %lx,%d ",op,address,size);
     if(status == MISS){
         printf("miss");
@@ -162,11 +162,11 @@ STATUS access(){
 }
 
 void load(){
-    printStatus(access());
+    print_status(access());
 }
 
 void store(){
-    printStatus(access());
+    print_status(access());
 }
 
 void modify(){
